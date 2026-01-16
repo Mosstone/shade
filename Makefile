@@ -1,24 +1,13 @@
 #!/usr/bin/env make
 
 # Variables
-INSTALL   ?= install -m 755
 PREFIX    ?= $(HOME)/.local
-DESTDIR   ?=
-DIRECT    := $(DESTDIR)$(PREFIX)
-
-BINDIR    := $(DIRECT)/bin
-LIBDIR    := $(DIRECT)/lib
-SYSCONFDIR:= $(DIRECT)/etc
-DATADIR   := $(DIRECT)/share
-MANDIR    := $(DATADIR)/man
 
 EXECDIR     := config
 SRCCDIR     := prompt
-TARBALL     := null # tarball.tar.gz
-DISTDIR     := Application
 COMMAND     := shade
 
-.PHONY: all unpack link run uninstall
+.PHONY: all link run uninstall
 
 all: run
 
@@ -26,24 +15,6 @@ all: run
 
 
 
-
-unpack:
-# 	mkdir -p $(DISTDIR)
-# 	tar -xzf $(TARBALL) -C $(DISTDIR)
-
-#<	Source Files
-
-#<	Nim
-# 	cd $(DISTDIR) && \
-# 		CC=musl-gcc nim c -d:release --opt:speed --mm:orc --passC:-flto --passL:-flto --passL:-static .nim
-
-#<	Go
-# 	cd $(DISTDIR)/src/ && \
-# 		GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags='-s -w' .go
-
-#<	Elixir
-# 	cd $(DISTDIR)/src/.modules && \
-# 		elixirc elixirtest.ex 2> /dev/null .ex
 
 link: unpack
 
@@ -56,6 +27,8 @@ link: unpack
 run: link
 
 	$(COMMAND) --version
+	@echo -e "\e[34m    Source ~/.bashrc or open a new terminal for changes to take effect\e[0m"
+	@source ~/.bashrc
 
 uninstall:
 	@sed -i '/# >>> Shade Initialize >>>/,/# <<< Shade Initialize <<</d' ~/.bashrc && echo "Removed from ~/.bashrc" || echo "Not found in ~/.bashrc"
