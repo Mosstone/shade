@@ -18,7 +18,7 @@ TARBALL     := null # tarball.tar.gz
 DISTDIR     := Application
 COMMAND     := shade
 
-.PHONY: all unpack link run clean
+.PHONY: all unpack link run uninstall
 
 all: run
 
@@ -57,5 +57,6 @@ run: link
 
 	$(COMMAND) --version
 
-clean:
+uninstall:
+	@sed -i '/# >>> Shade Initialize >>>/,/# <<< Shade Initialize <<</d' ~/.bashrc && echo "Removed from ~/.bashrc" || echo "Not found in ~/.bashrc"
 	rm $(PREFIX)/bin/$(COMMAND)
