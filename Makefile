@@ -7,7 +7,7 @@ EXECDIR     := config
 SRCCDIR     := prompt
 COMMAND     := shade
 
-.PHONY: all link run uninstall
+.PHONY: all unpack link run uninstall
 
 all: run
 
