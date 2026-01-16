@@ -13,6 +13,7 @@ DATADIR   := $(DIRECT)/share
 MANDIR    := $(DATADIR)/man
 
 EXECDIR     := config
+SRCCDIR     := prompt
 TARBALL     := null # tarball.tar.gz
 DISTDIR     := Application
 COMMAND     := shade
@@ -46,13 +47,15 @@ unpack:
 
 link: unpack
 
+	@chmod +x $(EXECDIR)
+	@chmod +x $(SRCCDIR)
 	@mkdir -p $(PREFIX)/bin/
 	@ln -sf $(CURDIR)/$(EXECDIR) $(PREFIX)/bin/$(COMMAND)
 	@grep -qxF 'source ~/shade/prompt' ~/.bashrc || echo -e '\n# >>> Shade Initialize >>>\n\n# !! Contents within this block are managed by Shade !!\n\n#   Modifies the PS1 with output from Shade\n#   https://github.com/Mosstone/Shade\n\nsource ~/shade/prompt\n\n# <<< Shade Initialize <<<\n' >> ~/.bashrc
 
 run: link
 
-	./$(EXECDIR) --version
+	$(COMMAND) --version
 
 clean:
 	rm $(PREFIX)/bin/$(COMMAND)
