@@ -1,0 +1,104 @@
+#!/usr/bin/bash
+
+main() {
+
+    update() {
+
+	    local status=''
+        local loc="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+
+        local threshold=$(cat "$loc/.config/threshold")
+        local colour=$(cat "$loc/.config/colour")
+        local bold=$(cat "$loc/.config/bold")
+
+        local venv=""
+        if [ -n "$VIRTUAL_ENV" ]; then
+            venv="($VIRTUAL_ENV_PROMPT) "
+        fi
+
+        #   If something set an err global it will be shown here and then unset
+        #   Useful in certain contexts where programs append the global err within scope especially so
+        #   that ai agents see all of the err text from previous invocations even as multiple programs
+        #   involved all appending the same err variable
+        if [[ -n "$err" ]]; then
+            status+="[$err] "
+            unset err
+        fi
+
+        #   Git status
+        if [[ -d .git ]]; then
+            local git_stat=''
+            local status_lines
+            status_lines=$(git status --porcelain 2>/dev/null)
+
+            # Special states first
+            if [[ -d .git/rebase-merge || -d .git/rebase-apply ]]; then
+                git_stat="⤴"     # rebase
+            elif [[ -f .git/MERGE_HEAD ]]; then
+                git_stat="⤣"     # merge
+            elif [[ -f .git/CHERRY_PICK_HEAD ]]; then
+                git_stat="⟳"     # cherry-pick
+            elif [[ $(git symbolic-ref -q HEAD) ]]; then
+                # On branch, add branch name
+                local branch
+                branch=$(git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --short HEAD)
+                git_stat="⎇ $branch"
+
+                # Check staged changes
+                if echo "$status_lines" | grep -q '^[A-Z]'; then git_stat+=" ✚"; fi
+
+                # Check unstaged changes
+                if echo "$status_lines" | grep -q '^.[A-Z]'; then git_stat+=" ●"; fi
+
+                # Check untracked files
+                if echo "$status_lines" | grep -q '^[?]'; then git_stat+=" ?"; fi
+
+                # Check merge conflicts
+                if echo "$status_lines" | grep -q '^UU'; then git_stat+=" ✗"; fi
+
+                # Check ahead/behind relative to upstream
+                local ahead=$(git rev-list --count @{u}..HEAD 2>/dev/null)
+                local behind=$(git rev-list --count HEAD..@{u} 2>/dev/null)
+                (( ahead > 0 )) && git_stat+=" ⇡$ahead"
+                (( behind > 0 )) && git_stat+=" ⇣$behind"
+
+            else
+                git_stat="⊙ $(git rev-parse --short HEAD 2>/dev/null)"     # detached
+            fi
+
+            [[ $git_stat ]] && status+="$git_stat "
+        fi
+
+        #   Is there an access point available
+        [[ "$(ip link | grep 'state UP mode')" ]] ||\
+            status+='[Network Disconnected] '
+
+        #   Is there an ssh client connected
+        [[ -n "$SSH_CONNECTION" ]] &&\
+            status+='[SSH] '
+
+        #   Is docker running
+        systemctl is-active --quiet docker && status+='[Docker] '
+
+        #   Is ram usage above 80%
+        local mem_free=$(awk '/MemAvailable/ {print $2}' /proc/meminfo)
+        local mem_total=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+        (( mem_free * 100 / mem_total < 20 )) && status+='[Low Memory] '
+
+
+        #   Print the status text if it exists
+        [[ ${status} ]] && echo -e "\e[90m    $status\e[0m"
+
+        if [ "${#1}" -lt "$threshold" ]; then
+            PS1="${CONDA_PROMPT_MODIFIER}$venv\[\e["${bold}\;${colour}"m\]$(whoami)@$(uname -n)\[\e[0m:\e["${colour}"m\] \w\[\e[0m\]\] $ "
+        else
+            PS1="${CONDA_PROMPT_MODIFIER}$venv\[\e["${bold}\;${colour}"m\]$(whoami)@$(uname -n)\[\e[0m:\e["${colour}"m\] \w\e[0m\]\]\n  $ "
+        fi
+
+    }
+
+    update "${PS1@P}"
+}
+
+grep 'main' <<< $PROMPT_COMMAND > /dev/null ||\
+    PROMPT_COMMAND="main${PROMPT_COMMAND:+;$PROMPT_COMMAND}"

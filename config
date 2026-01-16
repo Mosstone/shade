@@ -1,0 +1,201 @@
+#!/usr/bin/bash
+
+
+
+
+
+
+main() {
+    local version='    shade 1.0.3'
+    local help='\e[94m
+    A utility for replacing the PS1 in the terminal shell for visibility on narrow terminals and showing
+    some relevant information. If the number of characters in the shell prompt exceeds a threshold, then
+    a newline is added to the PS1 text so that the command line is given more space. The user can change
+    the threshold.
+
+    \e[34mInformation:\e[94m
+        While in git directory, there will be an icon above the shell prompt indicating the git status
+          \e[34m  rebase                  |\e[94m   ⤴
+          \e[34m  merge                   |\e[94m   ⤣
+          \e[34m  cherry pick             |\e[94m   ⟳
+          \e[34m  branch                  |\e[94m   ⎇
+          \e[34m  staged changes          |\e[94m   ✚
+          \e[34m  unstaged changes        |\e[94m   ●
+          \e[34m  untracked changes       |\e[94m   ?
+          \e[34m  conflicts               |\e[1;94m   ✗
+
+
+        In addition, there will be status text above the shell prompt while certain conditions are true
+            \e[0;34m[Network]               |\e[94m   ip link does not detect a connection\e[34m
+            [SSH]                   |\e[94m   a shell session is active\e[34m
+            [Docker]                |\e[94m   docker is active\e[34m
+
+    \e[34mUsage:\e[94m
+        The colour of the shell prompt can be customized with the following commands\e[34m
+            shade colour <colour>   \e[94m|   set the shall prompt colour\e[34m
+            shade threshold <int>   \e[94m|   set how many characters until command is on a new line\e[34m
+            shade bold <on|off>     \e[94m|   whether the host@name is very slightly bold\e[34m
+            shade reset             \e[94m|   restore defaults\e[34m
+    
+    For the changes to take effect, the following line needs to be present in the ~/.bashrc file:
+        \e[94msource ~/shade/prompt
+    \e[0m'
+    local loc="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+
+
+
+    case $1 in
+        '--help')
+            echo -e "$help\e[0m"
+            exit 0
+        ;;
+
+        '--version')
+            echo -e "\e[94m$version\e[0m"
+            exit 0
+        ;;
+
+
+
+        'colour')
+            shift
+
+            case $1 in
+                yellow)
+                    echo '93' > $loc/.config/colour
+                ;;
+
+                darkyellow)
+                    echo '33' > $loc/.config/colour
+                ;;
+
+                green)
+                    echo '92' > $loc/.config/colour
+                ;;
+
+                darkgreen)
+                    echo '32' > $loc/.config/colour
+                ;;
+
+                darkcyan)
+                    echo '36' > $loc/.config/colour
+                ;;
+
+                cyan)
+                    echo '96' > $loc/.config/colour
+                ;;
+
+                blue)
+                    echo '94' > $loc/.config/colour
+                ;;
+
+                darkblue)
+                    echo '34' > $loc/.config/colour
+                ;;
+
+                purple|violet)
+                    echo '95' > $loc/.config/colour
+                ;;
+
+                darkpurple|darkviolet)
+                    echo '35' > $loc/.config/colour
+                ;;
+
+                red)
+                    echo '91' > $loc/.config/colour
+                ;;
+
+                darkred)
+                    echo '31' > $loc/.config/colour
+                ;;
+
+                black|darkgrey|darkgray)
+                    echo '30' > $loc/.config/colour
+                ;;
+
+                grey|gray)
+                    echo '90' > $loc/.config/colour
+                ;;
+
+                white)
+                    echo '97' > $loc/.config/colour
+                ;;
+
+                default)
+                    echo '0' > $loc/.config/colour
+                ;;
+
+
+                --help)
+                    echo -e '\e[94m
+    Available colours:
+        \e[93myellow      |   \e[33mdarkyellow
+        \e[92mgreen       |   \e[32mdarkgreen
+        \e[96mcyan        |   \e[36mdarkcyan
+        \e[94mblue        |   \e[34mdarkblue
+        \e[95mpurple      |   \e[35mdarkpurple
+        \e[91mred         |   \e[31mdarkred
+        \e[94mblue        |   \e[34mdarkblue
+        \e[90mgrey        |   \e[30mdarkblack
+        \e[37mwhite       |   \e[0mdefault
+\e[0m'
+                ;;
+
+                *)
+                    echo -e "\e[34m\n>   Expected \e[94m'colour'\e[34m, received \e[94m$1\e[0m"
+                ;;
+            esac
+
+        ;;
+
+
+        'threshold')
+            shift
+
+            if (( $1 + 0 )); then
+                echo "$1" > $loc/.config/threshold
+            else
+                echo -e "\e[34m\n>   Expected \e[94m<int>\e[34m, received \e[94m$1\e[0m"
+            fi
+        ;;
+
+        'bold')
+            shift
+
+            case $1 in
+                yes)
+                    echo '1' > $loc/.config/bold
+                ;;
+
+                no)
+                    echo '0' > $loc/.config/bold
+                ;;
+
+                *)
+                    echo -e "\e[94m\n>   Expected 'yes' or 'no', received $1\e[0m"
+                ;;
+            esac
+        ;;
+
+
+
+        reset)
+            echo '94' > $loc/.config/colour
+            echo 'y' > $loc/.config/bold
+            echo '50' > $loc/.config/threshold
+        ;;
+
+        *)
+            echo -e "\e[34m\n>   Expected \e[94m'colour'\e[34m, \e[94m'threshold'\e[34m, or\e[94m 'bold'\e[34m, received \e[94m$1\e[0m"
+        ;;
+
+    esac
+
+}
+
+
+
+
+
+
+main $@
