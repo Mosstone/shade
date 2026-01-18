@@ -77,11 +77,17 @@ main() {
         [[ -n "$SSH_CONNECTION" ]] &&\
             status+='[SSH] '
 
-        #   Is docker running
+        #   Are you in Docker
         if [ -f /.dockerenv ]; then
 			status+='[Docker] '
 		fi
 
+		#	Are you in Kubernetes
+		if [ -f /var/run/secrets/kubernetes.io/serviceaccount/token ]; then
+			status+='[Kubernetes] '
+		fi
+
+		#	Are you in Singularity (apptainer)
 		if [ -d /.singularity.d ]; then
 		    status+='[Singularity] '
 		fi
