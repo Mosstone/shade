@@ -78,7 +78,9 @@ main() {
             status+='[SSH] '
 
         #   Is docker running
-        systemctl is-active --quiet docker && status+='[Docker] '
+        if [ -f /.dockerenv ]; then
+			status+='[Docker] '
+		fi
 
 		if [ -d /.singularity.d ]; then
 		    status+='[Singularity] '
