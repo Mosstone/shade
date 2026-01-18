@@ -80,6 +80,10 @@ main() {
         #   Is docker running
         systemctl is-active --quiet docker && status+='[Docker] '
 
+		if [ -d /.singularity.d ]; then
+		    status+='[Singularity] '
+		fi
+
         #   Is ram usage above 80%
         local mem_free=$(awk '/MemAvailable/ {print $2}' /proc/meminfo)
         local mem_total=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
