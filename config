@@ -182,7 +182,7 @@ main() {
         reset)
             echo '94' > $loc/.config/colour
             echo 'y' > $loc/.config/bold
-            echo '50' > $loc/.config/threshold
+            echo '60' > $loc/.config/threshold
         ;;
 
         *)
